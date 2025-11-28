@@ -9,6 +9,22 @@ class guestService {
       console.log(error);
     }
   }
+
+  static async setGuestCheckout(id: string) {
+    try {
+      return await apiClient.post(`/api/v1/guests/${id}/checkout`);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  static async registerGuest(payload: any) {
+    try {
+      return await apiClient.post(`/api/v1/guests/register`, payload);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 export default guestService;

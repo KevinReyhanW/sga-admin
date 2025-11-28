@@ -12,18 +12,15 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function Page() {
-  const { data: guests } = useQuery({
+  const { data: guests, isLoading: isLoading } = useQuery({
     queryKey: ["guests"],
     queryFn: async () => {
       return await guestService.fetchGuestList();
     },
   });
-
-  useEffect(() => {
-    console.log("[debug] -> ", guests);
-  }, [guests]);
 
   return (
     <div>
@@ -39,9 +36,9 @@ function Page() {
         <div className="flex items-center">
           <div className="flex gap-x-2 items-center ml-3">
             <Funnel size={18} />
-            <Button variant="outline" className="rounded-full">
+            <Button className="rounded-full">
               Check In
-              <Badge>2</Badge>
+              <Badge className="bg-white text-foreground">2</Badge>
             </Button>
             <Button variant="outline" className="rounded-full">
               Check Out
@@ -54,7 +51,16 @@ function Page() {
           Register Guest
         </Button>
       </div>
-      <GuestComponent guests={guests || []} />
+      {isLoading ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Skeleton className="h-[140px] w-full rounded-lg" />
+          <Skeleton className="h-[140px] w-full rounded-lg" />
+          <Skeleton className="h-[140px] w-full rounded-lg" />
+          <Skeleton className="h-[140px] w-full rounded-lg" />
+        </div>
+      ) : (
+        <GuestComponent guests={guests} />
+      )}
     </div>
   );
 }

@@ -1,26 +1,20 @@
 import React from "react";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  CircleUser,
-  Clock8,
-  ConciergeBell,
-  DoorClosed,
-  KeyRound,
-  Mail,
-  Pencil,
-  Phone,
-  SquarePen,
-} from "lucide-react";
+import { Clock8, ConciergeBell, Mail, Phone, SquarePen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import guestService from "@/app/services/guest";
 
 interface Props {
   guests: any;
 }
-function GuestComponent({ guests }: Props) {
+function GuestComponent({ guests = [] }: Props) {
+  const handleCheckOut = async (id: string) => {
+    await guestService.setGuestCheckout(id);
+  };
+
   return (
-    <div className="grid grid-cols-4 gap-x-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {guests?.map((guest: any) => {
         return (
           <div
@@ -86,7 +80,11 @@ function GuestComponent({ guests }: Props) {
                 </Button>
               </div>
               <div className="col-span-2">
-                <Button variant="outline" className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleCheckOut(guest.id)}
+                >
                   Check Out
                 </Button>
               </div>

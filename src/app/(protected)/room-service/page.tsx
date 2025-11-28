@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, ChefHat, Clock, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const mockOrders = [
   {
@@ -172,7 +173,16 @@ function Page() {
                       {order.guestName}
                     </h3>
                     <Badge variant="outline">Room {order.roomNumber}</Badge>
-                    <Badge variant={statusConfig.variant} className="gap-1">
+                    <Badge
+                      className={cn(
+                        "gap-1 text-white",
+                        order.status === "pending"
+                          ? "bg-info"
+                          : order.status === "delivered"
+                            ? "bg-success"
+                            : "bg-warning",
+                      )}
+                    >
                       <StatusIcon className="w-3 h-3" />
                       {statusConfig.label}
                     </Badge>
