@@ -1,10 +1,9 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import guestService from "@/app/services/guest";
 import GuestComponent from "@/components/guest-component";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Funnel, Search, UserPlus } from "lucide-react";
 import {

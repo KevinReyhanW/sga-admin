@@ -1,4 +1,5 @@
 import apiClient from "@/app/services/apiClient";
+import { format } from "date-fns";
 
 class guestService {
   static async fetchGuestList() {
@@ -20,7 +21,18 @@ class guestService {
 
   static async registerGuest(payload: any) {
     try {
-      return await apiClient.post(`/api/v1/guests/register`, payload);
+      return await apiClient.post(`/api/v1/guests/register`, {
+        ...payload,
+        checkin_date: format(payload.checkin_date, "yyyy-MM-dd"),
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  static async listAvailableRoom() {
+    try {
+      return await apiClient.get(`/api/v1/guests/rooms/available`);
     } catch (error) {
       console.log(error);
     }

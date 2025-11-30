@@ -32,3 +32,37 @@ export async function federatedLogout() {
     signOut({ redirectTo: "/login" }); // Redirect to login page on error
   }
 }
+
+export function timeAgo(dateString: string) {
+  const now = new Date();
+  const date = new Date(dateString);
+
+  const diffInSeconds = Math.floor((now - date) / 1000); // Difference in seconds
+
+  if (diffInSeconds < 60) {
+    return `${diffInSeconds} sec ago`; // Less than 1 minute
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} min ago`; // Less than 1 hour
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} hour ago`; // Less than 1 day
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) {
+    return `${diffInDays} day ago`; // Less than 30 days
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths < 12) {
+    return `${diffInMonths} month ago`; // Less than 12 months
+  }
+
+  const diffInYears = Math.floor(diffInMonths / 12);
+  return `${diffInYears} year ago`; // More than 1 year
+}

@@ -14,7 +14,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
 interface Request {
   id: string;
   guestName: string;
@@ -27,12 +26,22 @@ interface Request {
   pickedUpAt?: string;
 }
 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import requestService from "@/app/services/request";
+
 interface DraggableCardProps {
   request: Request;
   getStatusColor: (status: Request["status"]) => string;
+  onAssignStaff: (requestId: string, staffName: string) => void;
 }
 
-function DraggableCard({ request }: DraggableCardProps) {
+function DraggableCard({ request, onAssignStaff }: DraggableCardProps) {
+  const [popoverOpen, setPopoverOpen] = useState(false);
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: request.id,
     data: { request },
@@ -42,10 +51,17 @@ function DraggableCard({ request }: DraggableCardProps) {
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const handleAssignTask = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Add your assignment logic here
-    console.log("Assign task clicked for:", request.id);
+  const staffMembers = [
+    { id: "1", name: "Maria Garcia", role: "Housekeeping" },
+    { id: "2", name: "Carlos Rodriguez", role: "Room Service" },
+    { id: "3", name: "Jessica Lee", role: "Concierge" },
+    { id: "4", name: "Tom Anderson", role: "Maintenance" },
+    { id: "5", name: "Sophie Chen", role: "Housekeeping" },
+  ];
+
+  const handleAssignStaff = (staffName: string) => {
+    onAssignStaff(request.id, staffName);
+    setPopoverOpen(false);
   };
 
   return (
@@ -89,14 +105,50 @@ function DraggableCard({ request }: DraggableCardProps) {
             </div>
           )}
           {!request.assignedTo && (
-            <Button
-              size="sm"
-              className="w-full mt-2 cursor-pointer"
-              onClick={handleAssignTask}
-              onPointerDown={(e) => e.stopPropagation()}
-            >
-              Assign Task
-            </Button>
+            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  size="sm"
+                  className="w-full mt-2 cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  Assign Task
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-64 p-2"
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                <div className="space-y-1">
+                  <h4 className="font-semibold text-sm px-2 py-1.5">
+                    Assign to Staff
+                  </h4>
+                  <div className="space-y-1">
+                    {staffMembers.map((staff) => (
+                      <button
+                        key={staff.id}
+                        onClick={() => handleAssignStaff(staff.name)}
+                        className="w-full text-left px-2 py-2 rounded-md hover:bg-accent transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-muted-foreground" />
+                          <div>
+                            <div className="text-sm font-medium">
+                              {staff.name}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {staff.role}
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           )}
         </div>
       </div>
@@ -160,6 +212,14 @@ function Page() {
 
   const [requests, setRequests] = useState<Request[]>([]);
 
+  useQuery({
+    queryKey: ["requests"],
+    queryFn: async () => {
+      const response = await requestService.fetchRequestList();
+      setRequests(response);
+    },
+  });
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -212,6 +272,16 @@ function Page() {
     { status: "completed", title: "Completed" },
   ];
 
+  const handleAssignStaff = (requestId: string, staffName: string) => {
+    const tempRequests = [...requests];
+    const assignedIndex = tempRequests.findIndex((req) => req.id === requestId);
+    tempRequests[assignedIndex] = {
+      ...tempRequests[assignedIndex],
+      assignedTo: staffName,
+    };
+    setRequests(tempRequests);
+  };
+
   return (
     <DndContext
       collisionDetection={closestCenter}
@@ -248,6 +318,9 @@ function Page() {
                     key={request.id}
                     request={request}
                     getStatusColor={getStatusColor}
+                    onAssignStaff={(requestId, staffName) =>
+                      handleAssignStaff(requestId, staffName)
+                    }
                   />
                 ))}
 
@@ -266,6 +339,9 @@ function Page() {
             <DraggableCard
               request={requests.find((r) => r.id === activeId)!}
               getStatusColor={getStatusColor}
+              onAssignStaff={(requestId, staffName) =>
+                handleAssignStaff(requestId, staffName)
+              }
             />
           ) : null}
         </DragOverlay>

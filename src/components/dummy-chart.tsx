@@ -8,6 +8,10 @@ import {
 } from "@/components/ui/chart";
 import { Label, Pie, PieChart } from "recharts";
 
+interface Props {
+  requests: any;
+}
+
 const chartData = [
   {
     category: "transportation",
@@ -50,9 +54,9 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-function DummyChart() {
-  const totalVisitors = React.useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + curr.messages, 0);
+function DummyChart({ requests }: Props) {
+  const totalRequest = React.useMemo(() => {
+    return requests.length;
   }, []);
 
   return (
@@ -88,7 +92,7 @@ function DummyChart() {
                       y={viewBox.cy}
                       className="fill-foreground text-3xl font-bold"
                     >
-                      {totalVisitors.toLocaleString()}
+                      {totalRequest.toLocaleString()}
                     </tspan>
                     <tspan
                       x={viewBox.cx}

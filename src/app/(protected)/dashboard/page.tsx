@@ -39,8 +39,15 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import NewRequest from "@/components/new-request";
 import RecentRoomService from "@/components/recent-room-service";
-import requestService from "@/app/services/request";
 import LoaderComponent from "@/components/loader-component";
+import { useShape } from "@electric-sql/react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const guestSchema = z.object({
   full_name: z.string().min(2, "Full name must be at least 2 characters"),
@@ -69,6 +76,7 @@ function Page() {
     try {
       await guestService.registerGuest(data);
       await queryClient.invalidateQueries({ queryKey: ["guests"] });
+      handleCloseDialog();
     } catch (error) {
       console.log(error);
     }
@@ -79,12 +87,45 @@ function Page() {
     form.reset();
   };
 
-  const { data: requests, isFetching: requestsLoading } = useQuery({
-    queryKey: ["requests"],
-    queryFn: async () => {
-      return await requestService.fetchRequestList();
+  const { data: requests, isLoading: requestsLoading } = useShape({
+    url: `${process.env.NEXT_PUBLIC_ELECTRIC}/v1/shape`,
+    params: {
+      table: process.env.NEXT_PUBLIC_ELECTRIC_TABLE,
     },
   });
+
+  const { data: guests, isLoading: guestLoading } = useQuery({
+    queryKey: ["guests"],
+    queryFn: async () => {
+      return await guestService.fetchGuestList();
+    },
+  });
+
+  const { data: rooms } = useQuery({
+    queryKey: ["rooms"],
+    queryFn: async () => {
+      const response = await guestService.listAvailableRoom();
+      return response?.data.data.map((room: any) => {
+        return {
+          label: room.label,
+          value: room.room_number,
+        };
+      });
+    },
+  });
+
+  const getInsightValue = (type: string) => {
+    switch (type) {
+      case "Total Registered Guests":
+        return guests?.length;
+      case "Active Requests":
+        return requests.filter((r) => r.category !== "room_service").length;
+      case "Room Service Orders":
+        return requests.filter((r) => r.category === "room_service").length;
+      case "Avg Response Time":
+        return "22";
+    }
+  };
 
   return (
     <>
@@ -123,7 +164,7 @@ function Page() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-foreground">
-                {stat.value}
+                {guestLoading ? "-" : getInsightValue(stat.title)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">{stat.trend}</p>
             </CardContent>
@@ -136,11 +177,11 @@ function Page() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ChartPie className="w-5 h-5 text-primary" />
-              Messages by Type
+              Request by Type
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex justify-center items-center h-full">
-            <DummyChart />
+          <CardContent>
+            <DummyChart requests={requests} />
           </CardContent>
         </Card>
         <Card className="shadow-soft">
@@ -154,7 +195,19 @@ function Page() {
             {requestsLoading ? (
               <LoaderComponent />
             ) : (
-              <NewRequest requests={requests} />
+              <>
+                <NewRequest
+                  requests={requests
+                    .filter((r) => r.category !== "room_service")
+                    .slice(0, 3)}
+                />
+                <a
+                  href="/request"
+                  className="block mt-4 text-center text-sm text-primary hover:underline"
+                >
+                  View all requests →
+                </a>
+              </>
             )}
           </CardContent>
         </Card>
@@ -171,7 +224,11 @@ function Page() {
               <LoaderComponent />
             ) : (
               <>
-                <RecentRoomService />
+                <RecentRoomService
+                  requests={requests
+                    .filter((r) => r.category === "room_service")
+                    .slice(0, 3)}
+                />
                 <a
                   href="/room-service"
                   className="block mt-4 text-center text-sm text-primary hover:underline"
@@ -238,14 +295,24 @@ function Page() {
                     <FieldLabel htmlFor="room_number-form">
                       Room Number
                     </FieldLabel>
-                    <Input
-                      {...field}
-                      id="room_number-form"
-                      type="text"
-                      aria-invalid={fieldState.invalid}
-                      placeholder="302"
-                      autoComplete="off"
-                    />
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger
+                        id="room_number-form"
+                        aria-invalid={fieldState.invalid}
+                      >
+                        <SelectValue placeholder="Select a room" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {rooms?.map((room: any) => (
+                          <SelectItem key={room.value} value={room.value}>
+                            {room.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}

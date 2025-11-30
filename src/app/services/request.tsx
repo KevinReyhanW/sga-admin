@@ -4,7 +4,6 @@ import delay from "delay";
 class requestService {
   static async fetchRequestList() {
     try {
-      await delay(5000);
       return [
         {
           id: "1",

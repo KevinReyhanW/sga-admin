@@ -2,15 +2,20 @@ import React from "react";
 import { Separator } from "@/components/ui/separator";
 import { Clock8, ConciergeBell, Mail, Phone, SquarePen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import guestService from "@/app/services/guest";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   guests: any;
 }
 function GuestComponent({ guests = [] }: Props) {
+  const queryClient = useQueryClient();
+
   const handleCheckOut = async (id: string) => {
     await guestService.setGuestCheckout(id);
+    await queryClient.invalidateQueries({ queryKey: ["guests"] });
   };
 
   return (
@@ -21,12 +26,21 @@ function GuestComponent({ guests = [] }: Props) {
             key={guest.id}
             className="rounded-lg border shadow overflow-hidden"
           >
-            <div className="text-sm bg-sky-600 w-full flex justify-between text-white px-4 py-2">
+            <div
+              className={cn(
+                "text-sm  w-full flex justify-between text-white px-4 py-2",
+                guest.checkin_rooms[0].checkout_date === null
+                  ? "bg-primary"
+                  : "bg-success",
+              )}
+            >
               <h3 className="font-semibold flex gap-x-1 items-center">
                 <ConciergeBell size={15} />
                 Room
               </h3>
-              <span className="font-bold">#303</span>
+              <span className="font-bold">
+                #{guest.checkin_rooms[0].room.room_number}
+              </span>
             </div>
             <div className="grid-cols-5 gap-x-2 px-4 py-2">
               <div className="col-span-3 flex items-center justify-between">
@@ -62,33 +76,52 @@ function GuestComponent({ guests = [] }: Props) {
                   <Clock8 className="text-primary" size={12} />
                   Check In
                 </h3>
-                <p className="text-xs">23 November, 2025</p>
+                <p className="text-xs">
+                  {format(guest.checkin_rooms[0].checkin_date, "dd MMMM, yyyy")}
+                </p>
               </div>
               <div className="col-span-2">
                 <h3 className="font-semibold text-sm flex items-center gap-x-1">
                   <Clock8 className="text-primary" size={12} />
                   Check Out
                 </h3>
-                <p className="text-xs"></p>
+                <p className="text-xs">
+                  {guest.checkin_rooms[0].checkout_date
+                    ? format(
+                        guest.checkin_rooms[0].checkout_date,
+                        "dd MMMM, yyyy",
+                      )
+                    : "-"}
+                </p>
               </div>
             </div>
             <Separator />
-            <div className="grid grid-cols-5 gap-x-2 px-4 py-2 bg-slate-50">
-              <div className="col-span-3">
-                <Button variant="outline" className="w-full">
-                  Message History
-                </Button>
+            {guest.checkin_rooms[0].checkout_date === null ? (
+              <div className="grid grid-cols-5 gap-x-2 px-4 py-2 bg-slate-50">
+                <div className="col-span-3">
+                  <Button variant="outline" className="w-full">
+                    Message History
+                  </Button>
+                </div>
+                <div className="col-span-2">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => handleCheckOut(guest.id)}
+                  >
+                    Check Out
+                  </Button>
+                </div>
               </div>
-              <div className="col-span-2">
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => handleCheckOut(guest.id)}
-                >
-                  Check Out
-                </Button>
+            ) : (
+              <div className="grid grid-cols-5 gap-x-2 px-4 py-2 bg-slate-50">
+                <div className="col-span-5">
+                  <Button variant="outline" className="w-full">
+                    Message History
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         );
       })}
