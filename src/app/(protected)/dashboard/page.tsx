@@ -3,89 +3,20 @@ import React from "react";
 import ShortcutMenu from "@/components/shortcut-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { stats } from "@/app/mock/dashboard";
-import {
-  CalendarIcon,
-  ChartPie,
-  HandPlatter,
-  UtensilsCrossed,
-} from "lucide-react";
+import { ChartPie, HandPlatter, UtensilsCrossed } from "lucide-react";
 import DummyChart from "@/components/dummy-chart";
 import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { z } from "zod";
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import guestService from "@/app/services/guest";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
 import NewRequest from "@/components/new-request";
 import RecentRoomService from "@/components/recent-room-service";
 import LoaderComponent from "@/components/loader-component";
 import { useShape } from "@electric-sql/react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-const guestSchema = z.object({
-  full_name: z.string().min(2, "Full name must be at least 2 characters"),
-  room_number: z.string().min(3, "Room number must be at least 3 characters"),
-  email: z.email("Please enter a valid email address"),
-  phone_number: z.string().min(8, "Phone number must be at least 8 characters"),
-  checkin_date: z.date().min(8, "Check-in date must be filled"),
-});
+import { useStore } from "zustand/react";
+import useAppStateStore from "@/app/store/app.store";
 
 function Page() {
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const queryClient = useQueryClient();
-
-  const form = useForm<z.infer<typeof guestSchema>>({
-    resolver: zodResolver(guestSchema),
-    defaultValues: {
-      email: "",
-      full_name: "",
-      checkin_date: new Date(),
-      phone_number: "",
-      room_number: "",
-    },
-  });
-
-  const onSubmit = async (data: any) => {
-    try {
-      await guestService.registerGuest(data);
-      await queryClient.invalidateQueries({ queryKey: ["guests"] });
-      handleCloseDialog();
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    form.reset();
-  };
+  const stateStore = useStore(useAppStateStore);
 
   const { data: requests, isLoading: requestsLoading } = useShape({
     url: `${process.env.NEXT_PUBLIC_ELECTRIC}/v1/shape`,
@@ -101,20 +32,8 @@ function Page() {
     },
   });
 
-  const { data: rooms } = useQuery({
-    queryKey: ["rooms"],
-    queryFn: async () => {
-      const response = await guestService.listAvailableRoom();
-      return response?.data.data.map((room: any) => {
-        return {
-          label: room.label,
-          value: room.room_number,
-        };
-      });
-    },
-  });
-
   const getInsightValue = (type: string) => {
+    console.log("[debug] -> ", requests);
     switch (type) {
       case "Total Registered Guests":
         return guests?.length;
@@ -123,13 +42,15 @@ function Page() {
       case "Room Service Orders":
         return requests.filter((r) => r.category === "room_service").length;
       case "Avg Response Time":
-        return "22";
+        return "4.56";
     }
   };
 
   return (
     <>
-      <ShortcutMenu handleOpenDialog={() => setIsDialogOpen(true)} />
+      <ShortcutMenu
+        handleOpenDialog={() => stateStore.setRegisterDialogOpen(true)}
+      />
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 my-4">
         {stats.map((stat) => (
           <Card
@@ -240,156 +161,6 @@ function Page() {
           </CardContent>
         </Card>
       </div>
-      <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Register New Guest</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FieldGroup>
-              <Controller
-                name="full_name"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="fullname-form">Full Name</FieldLabel>
-                    <Input
-                      {...field}
-                      id="fullname-form"
-                      type="text"
-                      aria-invalid={fieldState.invalid}
-                      placeholder="John Doe "
-                      autoComplete="off"
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="email"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="email-form">Email</FieldLabel>
-                    <Input
-                      {...field}
-                      id="email-form"
-                      type="email"
-                      aria-invalid={fieldState.invalid}
-                      placeholder="m@example.com"
-                      autoComplete="off"
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="room_number"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="room_number-form">
-                      Room Number
-                    </FieldLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger
-                        id="room_number-form"
-                        aria-invalid={fieldState.invalid}
-                      >
-                        <SelectValue placeholder="Select a room" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {rooms?.map((room: any) => (
-                          <SelectItem key={room.value} value={room.value}>
-                            {room.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="checkin_date"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="room_number-form">
-                      Checkin Date
-                    </FieldLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "flex items-center w-full justify-between text-left font-normal",
-                            !field.value && "text-muted-foreground",
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "yyyy-MM-dd")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="phone_number"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="phone_number-form">
-                      Phone Number
-                    </FieldLabel>
-                    <Input
-                      {...field}
-                      id="phone_number-form"
-                      type="text"
-                      aria-invalid={fieldState.invalid}
-                      placeholder="83749939"
-                      autoComplete="off"
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-            </FieldGroup>
-            <Button
-              type="submit"
-              className="w-full bg-primary hover:bg-primary/90"
-            >
-              Register Guest
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

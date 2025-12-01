@@ -14,42 +14,55 @@ function RecentRoomService({ requests }: Props) {
       {requests.map((order: any, i: number) => {
         return (
           <div key={i} className="py-3 border-b border-border last:border-0">
-            <div className="flex items-start justify-between mb-2">
+            <div className="flex justify-between">
               <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">
-                  {order.guest_name}
-                </p>
-                <div className="flex items-center gap-2">
+                <div className="flex gap-x-2">
+                  <p className="text-sm font-medium text-foreground">
+                    {order.guest_name}
+                  </p>
                   <Badge variant="outline" className="text-xs">
                     Room {order.room.room_number}
                   </Badge>
-                  <Badge
-                    variant={
-                      order.status === "preparing" ? "secondary" : "default"
-                    }
-                    className={cn(
-                      "text-xs",
-                      order.status === "pending"
-                        ? "bg-info"
-                        : order.status === "preparing"
-                          ? "bg-warning text-white"
-                          : "bg-success",
-                    )}
-                  >
-                    {order.status === "preparing" ? (
-                      <ChefHat className="w-3 h-3 mr-1" />
-                    ) : (
-                      <Clock className="w-3 h-3 mr-1" />
-                    )}
-                    {order.status}
-                  </Badge>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {order.order_items.map((item: any) => {
+                    return (
+                      <div key={item.id}>
+                        <h2 className="font-semibold">{item.title}</h2>
+                        <span className="inline-block mr-2">
+                          {item.description}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {timeAgo(order.created_at)}
-              </p>
+              <div className="flex flex-col justify-center items-center">
+                <p className="text-xs text-muted-foreground mb-1">
+                  {timeAgo(order.created_at)}
+                </p>
+                <Badge
+                  variant={
+                    order.status === "preparing" ? "secondary" : "default"
+                  }
+                  className={cn(
+                    "text-xs",
+                    order.status === "pending"
+                      ? "bg-info"
+                      : order.status === "preparing"
+                        ? "bg-warning text-white"
+                        : "bg-success",
+                  )}
+                >
+                  {order.status === "preparing" ? (
+                    <ChefHat className="w-3 h-3 mr-1" />
+                  ) : (
+                    <Clock className="w-3 h-3 mr-1" />
+                  )}
+                  {order.status}
+                </Badge>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground"></p>
           </div>
         );
       })}

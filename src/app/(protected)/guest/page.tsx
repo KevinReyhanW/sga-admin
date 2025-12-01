@@ -12,8 +12,12 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useStore } from "zustand/react";
+import useAppStateStore from "@/app/store/app.store";
 
 function Page() {
+  const stateStore = useStore(useAppStateStore);
+
   const { data: guests, isLoading: isLoading } = useQuery({
     queryKey: ["guests"],
     queryFn: async () => {
@@ -45,7 +49,7 @@ function Page() {
             </Button>
           </div>
         </div>
-        <Button>
+        <Button onClick={() => stateStore.setRegisterDialogOpen(true)}>
           <UserPlus className="w-4 h-4" />
           Register Guest
         </Button>

@@ -3,64 +3,47 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ChefHat, Clock, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useShape } from "@electric-sql/react";
+import { format } from "date-fns";
 
-const mockOrders = [
-  {
-    id: "RS001",
-    guestName: "Sarah Johnson",
-    roomNumber: "305",
-    items: ["Caesar Salad", "Grilled Salmon", "Red Wine"],
-    totalAmount: "$45.00",
-    status: "pending",
-    orderTime: "2024-01-15 12:30 PM",
-    notes: "No onions in salad",
-  },
-  {
-    id: "RS002",
-    guestName: "Michael Chen",
-    roomNumber: "412",
-    items: ["Club Sandwich", "French Fries", "Coca Cola"],
-    totalAmount: "$28.00",
-    status: "preparing",
-    orderTime: "2024-01-15 12:45 PM",
-    notes: "",
-  },
-  {
-    id: "RS003",
-    guestName: "Emily Davis",
-    roomNumber: "208",
-    items: ["Breakfast Platter", "Orange Juice", "Coffee"],
-    totalAmount: "$32.00",
-    status: "delivered",
-    orderTime: "2024-01-15 08:15 AM",
-    notes: "Extra crispy bacon",
-  },
-  {
-    id: "RS004",
-    guestName: "James Wilson",
-    roomNumber: "501",
-    items: ["Steak Medium Rare", "Mashed Potatoes", "Beer"],
-    totalAmount: "$65.00",
-    status: "preparing",
-    orderTime: "2024-01-15 01:00 PM",
-    notes: "",
-  },
-  {
-    id: "RS005",
-    guestName: "Lisa Anderson",
-    roomNumber: "115",
-    items: ["Vegetable Soup", "Garden Salad", "Iced Tea"],
-    totalAmount: "$22.00",
-    status: "pending",
-    orderTime: "2024-01-15 01:15 PM",
-    notes: "Vegan options only",
-  },
-];
+interface Request {
+  category: string;
+  guest_name: string;
+  status:
+    | "pending"
+    | "in-progress"
+    | "completed"
+    | "preparing"
+    | "delivered"
+    | "cancelled";
+  items: string[];
+  order_id: string;
+  room: any;
+  order_items: any;
+  created_at: string;
+  updated_at: string;
+  assignedTo?: string;
+}
 
 function Page() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [requests, setRequests] = useState<Request[]>([]);
+
+  const { data: requestsShape, isLoading: requestsLoading } = useShape({
+    url: `${process.env.NEXT_PUBLIC_ELECTRIC}/v1/shape`,
+    params: {
+      table: process.env.NEXT_PUBLIC_ELECTRIC_TABLE,
+    },
+  });
+
+  useEffect(() => {
+    const requests = requestsShape.filter((item) => {
+      return item.category === "room_service";
+    });
+    setRequests(requests);
+  }, [requestsShape]);
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -89,18 +72,18 @@ function Page() {
     }
   };
 
-  const filteredOrders = mockOrders.filter(
+  const filteredOrders = requests.filter(
     (order) =>
-      order.guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.roomNumber.includes(searchTerm) ||
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()),
+      order.guest_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.room.room_number.includes(searchTerm) ||
+      order.order_id.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const stats = {
-    total: mockOrders.length,
-    pending: mockOrders.filter((o) => o.status === "pending").length,
-    preparing: mockOrders.filter((o) => o.status === "preparing").length,
-    delivered: mockOrders.filter((o) => o.status === "delivered").length,
+    total: requests.length,
+    pending: requests.filter((o) => o.status === "pending").length,
+    preparing: requests.filter((o) => o.status === "preparing").length,
+    delivered: requests.filter((o) => o.status === "delivered").length,
   };
 
   return (
@@ -163,16 +146,18 @@ function Page() {
 
           return (
             <div
-              key={order.id}
+              key={order.order_id}
               className="p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
             >
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-3">
                     <h3 className="font-semibold text-foreground">
-                      {order.guestName}
+                      {order.guest_name}
                     </h3>
-                    <Badge variant="outline">Room {order.roomNumber}</Badge>
+                    <Badge variant="outline">
+                      Room {order.room.room_number}
+                    </Badge>
                     <Badge
                       className={cn(
                         "gap-1 text-white",
@@ -188,19 +173,25 @@ function Page() {
                     </Badge>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    <p className="font-medium">Order #{order.id}</p>
-                    <p className="mt-1">{order.items.join(" • ")}</p>
-                    {order.notes && (
-                      <p className="mt-1 italic">Note: {order.notes}</p>
-                    )}
+                    <p className="font-medium">
+                      Order #{order.order_id.slice(0, 4)}
+                    </p>
+                    {order.order_items.map((item: any, index: number) => {
+                      return (
+                        <div key={index} className="py-3">
+                          <h3 className="font-semibold">{item.title}</h3>
+                          <p className="mt-1">{item.description}</p>
+                        </div>
+                      );
+                    })}
                   </div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {order.orderTime}
+                      {format(order.created_at, "dd/MM/yyyy hh:mm aaa")}
                     </span>
                     <span className="font-semibold text-foreground">
-                      {order.totalAmount}
+                      {/*{order.totalAmount}*/}
                     </span>
                   </div>
                 </div>

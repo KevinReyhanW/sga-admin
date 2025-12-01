@@ -46,7 +46,8 @@
     "shadcn": "^3.5.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
-    "zod": "^4.1.13"
+    "zod": "^4.1.13",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@auth/core": "^0.41.0",

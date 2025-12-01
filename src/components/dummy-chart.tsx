@@ -7,40 +7,25 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Label, Pie, PieChart } from "recharts";
+import { convertJsonData } from "@/lib/utils";
 
 interface Props {
   requests: any;
 }
 
-const chartData = [
-  {
-    category: "transportation",
-    messages: 275,
-    fill: "var(--color-transportation)",
-  },
-  { category: "cleanup", messages: 200, fill: "var(--color-cleanup)" },
-  { category: "roomService", messages: 287, fill: "var(--color-roomService)" },
-  {
-    category: "reservations",
-    messages: 173,
-    fill: "var(--color-reservations)",
-  },
-  { category: "other", messages: 190, fill: "var(--color-other)" },
-];
-
 const chartConfig = {
   messages: {
     label: "Messages",
   },
-  transportation: {
-    label: "transportation",
+  maintenance: {
+    label: "Maintenance",
     color: "var(--chart-1)",
   },
-  cleanup: {
-    label: "Clean Up",
+  housekeeping: {
+    label: "Housekeeping",
     color: "var(--chart-2)",
   },
-  roomService: {
+  room_service: {
     label: "Room Service",
     color: "var(--chart-3)",
   },
@@ -55,6 +40,8 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 function DummyChart({ requests }: Props) {
+  const chartData = convertJsonData(requests);
+
   const totalRequest = React.useMemo(() => {
     return requests.length;
   }, []);

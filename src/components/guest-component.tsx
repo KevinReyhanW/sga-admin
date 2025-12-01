@@ -20,12 +20,9 @@ function GuestComponent({ guests = [] }: Props) {
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {guests?.map((guest: any) => {
+      {guests?.map((guest: any, index: number) => {
         return (
-          <div
-            key={guest.id}
-            className="rounded-lg border shadow overflow-hidden"
-          >
+          <div key={index} className="rounded-lg border shadow overflow-hidden">
             <div
               className={cn(
                 "text-sm  w-full flex justify-between text-white px-4 py-2",

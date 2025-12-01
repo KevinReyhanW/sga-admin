@@ -66,3 +66,45 @@ export function timeAgo(dateString: string) {
   const diffInYears = Math.floor(diffInMonths / 12);
   return `${diffInYears} year ago`; // More than 1 year
 }
+
+export function convertJsonData(data: any) {
+  const categoryCount = {
+    maintenance: 0,
+    housekeeping: 0,
+    room_service: 0,
+    other: 0,
+  };
+
+  data.forEach((item) => {
+    if (categoryCount.hasOwnProperty(item.category)) {
+      categoryCount[item.category] += 1;
+    } else {
+      categoryCount["other"] += 1;
+    }
+  });
+
+  const result = [
+    {
+      category: "maintenance",
+      messages: categoryCount["maintenance"],
+      fill: "var(--color-maintenance)",
+    },
+    {
+      category: "housekeeping",
+      messages: categoryCount["housekeeping"],
+      fill: "var(--color-housekeeping)",
+    },
+    {
+      category: "room_service",
+      messages: categoryCount["room_service"],
+      fill: "var(--color-room_service)",
+    },
+    {
+      category: "other",
+      messages: categoryCount["other"],
+      fill: "var(--color-other)",
+    },
+  ];
+
+  return result;
+}

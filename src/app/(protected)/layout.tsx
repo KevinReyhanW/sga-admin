@@ -9,6 +9,9 @@ import { Separator } from "@/components/ui/separator";
 import { Inbox } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { title } from "radash";
+import RegisterDialog from "@/components/register-dialog";
+import { useStore } from "zustand/react";
+import useAppStateStore from "@/app/store/app.store";
 
 export default function DashboardLayout({
   children,
@@ -16,6 +19,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
+  const stateStore = useStore(useAppStateStore);
+
+  const handleOpenDialog = () => {
+    stateStore.setRegisterDialogOpen(false);
+  };
 
   return (
     <SidebarProvider>
@@ -35,6 +43,10 @@ export default function DashboardLayout({
           </header>
         </div>
         <div className="px-4">{children}</div>
+        <RegisterDialog
+          open={stateStore.registerDialogOpen}
+          handleClose={handleOpenDialog}
+        />
       </SidebarInset>
     </SidebarProvider>
   );
