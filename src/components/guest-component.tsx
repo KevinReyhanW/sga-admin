@@ -9,8 +9,9 @@ import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   guests: any;
+  handleOnshowHistory: (guest: any) => void;
 }
-function GuestComponent({ guests = [] }: Props) {
+function GuestComponent({ guests = [], handleOnshowHistory }: Props) {
   const queryClient = useQueryClient();
 
   const handleCheckOut = async (id: string) => {
@@ -96,7 +97,11 @@ function GuestComponent({ guests = [] }: Props) {
             {guest.checkin_rooms[0].checkout_date === null ? (
               <div className="grid grid-cols-5 gap-x-2 px-4 py-2 bg-slate-50">
                 <div className="col-span-3">
-                  <Button variant="outline" className="w-full">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => handleOnshowHistory(guest)}
+                  >
                     Message History
                   </Button>
                 </div>
@@ -113,7 +118,11 @@ function GuestComponent({ guests = [] }: Props) {
             ) : (
               <div className="grid grid-cols-5 gap-x-2 px-4 py-2 bg-slate-50">
                 <div className="col-span-5">
-                  <Button variant="outline" className="w-full">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => handleOnshowHistory(guest)}
+                  >
                     Message History
                   </Button>
                 </div>

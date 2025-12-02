@@ -2,12 +2,9 @@ import apiClient from "@/app/services/apiClient";
 import { format } from "date-fns";
 
 class messageService {
-  static async fetchMessages(payload: any) {
+  static async fetchMessages(sessionId: string) {
     try {
-      return await apiClient.get(`/api/v1/messages`, {
-        ...payload,
-        checkin_date: format(payload.checkin_date, "yyyy-MM-dd"),
-      });
+      return await apiClient.get(`/api/v1/messages?session_id=${sessionId}`);
     } catch (error) {
       console.log(error);
     }

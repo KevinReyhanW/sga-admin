@@ -6,7 +6,7 @@ import { stats } from "@/app/mock/dashboard";
 import { ChartPie, HandPlatter, UtensilsCrossed } from "lucide-react";
 import DummyChart from "@/components/dummy-chart";
 import { cn } from "@/lib/utils";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import guestService from "@/app/services/guest";
 import NewRequest from "@/components/new-request";
 import RecentRoomService from "@/components/recent-room-service";
@@ -33,7 +33,6 @@ function Page() {
   });
 
   const getInsightValue = (type: string) => {
-    console.log("[debug] -> ", requests);
     switch (type) {
       case "Total Registered Guests":
         return guests?.length;
@@ -85,7 +84,7 @@ function Page() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-foreground">
-                {guestLoading ? "-" : getInsightValue(stat.title)}
+                {requestsLoading ? "-" : getInsightValue(stat.title)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">{stat.trend}</p>
             </CardContent>

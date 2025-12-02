@@ -1,6 +1,8 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { timeAgo } from "@/lib/utils";
+import { title } from "radash";
+import { Clock } from "lucide-react";
 
 interface Props {
   requests: any;
@@ -8,30 +10,29 @@ interface Props {
 function NewRequest({ requests }: Props) {
   console.log("[debug] -> ", requests);
   return (
-    <div className="space-y-4">
+    <div>
       {requests.map((activity: any, i: number) => (
-        <div
-          key={i}
-          className="flex items-center justify-between py-3 border-b border-border last:border-0"
-        >
-          <div className="space-y-1">
-            <div className="flex gap-x-2">
-              <p className="text-sm font-medium text-foreground">
-                {activity.guest_name}
-              </p>
-              <Badge variant="outline" className="text-xs">
-                Room {activity.room.room_number}
-              </Badge>
-            </div>
-            <div className="text-xs text-muted-foreground">
-              <h3 className="font-semibold">{activity.order_items[0].title}</h3>
-              {activity.order_items[0].description}
-            </div>
+        <div key={i} className="py-3 border-b border-border last:border-0">
+          <Badge
+            variant="outline"
+            className="text-xs bg-slate-100 border-gray-400 border font-semibold mb-2"
+          >
+            Room {activity.room.room_number}
+          </Badge>
+          <div className="w-full mb-2">
+            <div className="font-semibold text-sm">{activity.guest_name}</div>
           </div>
-          <div className="text-right space-y-1">
-            <p className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground border-l-2 border-l-primary pl-2">
+            <h3 className="font-semibold">
+              {title(activity.order_items[0]?.title)}
+            </h3>
+            {activity.order_items[0]?.description}
+          </div>
+          <div className="flex justify-between items-center mt-3">
+            <div className="text-xs text-muted-foreground flex items-center gap-x-1">
+              <Clock size={14} />
               {timeAgo(activity.created_at)}
-            </p>
+            </div>
             <span
               className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                 activity.status === "completed"
@@ -41,7 +42,7 @@ function NewRequest({ requests }: Props) {
                     : "bg-sky-50 text-sky-700 border border-sky-500"
               }`}
             >
-              {activity.status}
+              {title(activity.status)}
             </span>
           </div>
         </div>

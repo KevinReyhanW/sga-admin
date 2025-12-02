@@ -14,6 +14,16 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStore } from "zustand/react";
 import useAppStateStore from "@/app/store/app.store";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import messageService from "@/app/services/messages";
+import ChatComponent from "@/components/chat-component";
+import { cn } from "@/lib/utils";
 
 type FilterType = "all" | "checkin" | "checkout";
 
@@ -21,6 +31,9 @@ function Page() {
   const stateStore = useStore(useAppStateStore);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [showHistory, setShowHistory] = useState(false);
+  const [selectedGuest, setSelectedGuest] = useState<any>();
+  const [messages, setMessages] = useState<any[]>([]);
 
   const { data: guests, isLoading: isLoading } = useQuery({
     queryKey: ["guests"],
@@ -29,7 +42,6 @@ function Page() {
     },
   });
 
-  // Calculate counts for badges
   const counts = useMemo(() => {
     if (!guests) return { checkin: 0, checkout: 0 };
 
@@ -80,6 +92,25 @@ function Page() {
     setActiveFilter(activeFilter === filter ? "all" : filter);
   };
 
+  const handleCloseHistory = () => {
+    setShowHistory(false);
+    setSelectedGuest(null);
+    setMessages([]);
+  };
+
+  const handleShowHistory = async (guest: any) => {
+    const messagesHistory = await messageService.fetchMessages(
+      guest.sessions[0]?.id ? guest.sessions[0]?.id : null,
+    );
+
+    if (messagesHistory) {
+      setMessages(messagesHistory?.data.data);
+    }
+
+    setSelectedGuest(guest);
+    setShowHistory(true);
+  };
+
   return (
     <div>
       <div>
@@ -114,13 +145,20 @@ function Page() {
             </Button>
             <Button
               variant={activeFilter === "checkout" ? "default" : "outline"}
-              className="rounded-full"
+              className={cn(
+                "rounded-full",
+                activeFilter === "checkout"
+                  ? "bg-success hover:bg-success"
+                  : "",
+              )}
               onClick={() => handleFilterToggle("checkout")}
             >
               Check Out
               <Badge
                 className={
-                  activeFilter === "checkout" ? "bg-white text-foreground" : ""
+                  activeFilter === "checkout"
+                    ? "bg-white text-foreground"
+                    : "bg-success"
                 }
               >
                 {counts.checkout}
@@ -141,8 +179,41 @@ function Page() {
           <Skeleton className="h-[140px] w-full rounded-lg" />
         </div>
       ) : (
-        <GuestComponent guests={filteredGuests} />
+        <GuestComponent
+          guests={filteredGuests}
+          handleOnshowHistory={(guest) => handleShowHistory(guest)}
+        />
       )}
+      <Drawer
+        open={showHistory}
+        onOpenChange={handleCloseHistory}
+        direction="right"
+      >
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Message History</DrawerTitle>
+            <DrawerDescription></DrawerDescription>
+          </DrawerHeader>
+          <div className="flex justify-between items-center p-4 border-b border-b-gray-300">
+            <div className="font-semibold text-sm">{selectedGuest?.name}</div>
+            <Badge>#{selectedGuest?.checkin_rooms[0].room.room_number}</Badge>
+          </div>
+          <div className="h-full">
+            {messages.length === 0 ? (
+              <div className="flex w-full h-full justify-center items-center flex-col space-y-3">
+                <img
+                  src="/empty-conversation.png"
+                  alt="Empty Chat"
+                  className="w-24"
+                />
+                No History
+              </div>
+            ) : (
+              <ChatComponent messages={messages} />
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

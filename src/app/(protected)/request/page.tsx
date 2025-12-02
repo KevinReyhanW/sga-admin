@@ -16,13 +16,14 @@ import { cn } from "@/lib/utils";
 interface Request {
   category: string;
   guest_name: string;
-  status: "pending" | "in-progress" | "completed";
+  status: "pending" | "in_progress" | "completed";
   order_id: string;
   room: any;
   order_items: any;
   created_at: string;
   updated_at: string;
   assignedTo?: string;
+  order_number: string;
 }
 import { useQuery } from "@tanstack/react-query";
 import workerService from "@/app/services/worker";
@@ -36,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import requestService from "@/app/services/request";
+import { title } from "radash";
 
 interface DraggableCardProps {
   request: Request;
@@ -59,50 +61,47 @@ function DraggableCard({
   };
 
   const handleAssignStaff = (staffName: string) => {
-    onAssignStaff(request.order_id, staffName);
+    onAssignStaff(request.order_number, staffName);
   };
 
   return (
     <Card
       ref={setNodeRef}
       style={style}
-      className="p-4 hover:shadow-medium transition-all cursor-grab active:cursor-grabbing"
+      className={cn(
+        "p-4 hover:shadow-medium transition-all cursor-grab active:cursor-grabbing border-l-3",
+        request.status === "pending"
+          ? "border-l-info"
+          : request.status === "in_progress"
+            ? "border-l-warning"
+            : "border-l-success",
+      )}
       {...attributes}
       {...listeners}
     >
-      <div className="space-y-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <div>
-                <h3 className="font-semibold text-foreground text-sm">
-                  {request.guest_name}
-                </h3>
-                <span className="text-xs text-muted-foreground">
-                  Room {request.room.room_number}
-                </span>
-              </div>
-            </div>
-          </div>
-          <Badge variant="outline" className="text-xs">
-            {request.category}
-          </Badge>
+      <div>
+        <Badge
+          variant="outline"
+          className="text-xs bg-slate-100 border-gray-400 border font-semibold mb-2"
+        >
+          Room {request.room.room_number}
+        </Badge>
+        <div className="w-full">
+          <h3 className="font-semibold text-foreground text-sm">
+            {request.guest_name}
+          </h3>
         </div>
 
-        <div>
+        <div className="text-xs text-muted-foreground border-l-2 border-l-primary pl-2 my-2">
           <h3 className="text-sm text-muted-foreground font-semibold">
-            {request.order_items[0].title}
+            {request.order_items[0]?.title}
           </h3>
           <p className="text-sm text-muted-foreground">
-            {request.order_items[0].description}
+            {request.order_items[0]?.description}
           </p>
         </div>
 
-        <div className="space-y-2 text-xs text-muted-foreground pt-2 border-t">
-          <div className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {format(request.created_at, "dd/MM/yyyy hh:mm aaa")}
-          </div>
+        <div className="space-y-2 text-xs text-muted-foreground mb-4 mt-1">
           {request.assignedTo && (
             <div className="flex items-center gap-1">
               <User className="w-3 h-3" />
@@ -133,6 +132,16 @@ function DraggableCard({
               </SelectContent>
             </Select>
           )}
+        </div>
+
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground ">
+            <Clock className="w-3 h-3" />
+            {format(request.created_at, "dd/MM/yyyy hh:mm aaa")}
+          </div>
+          <Badge variant="outline" className="text-xs bg-primary text-white">
+            {title(request.category)}
+          </Badge>
         </div>
       </div>
     </Card>
@@ -176,7 +185,7 @@ function DroppableColumn({
             "text-xs text-white",
             status === "pending"
               ? "bg-info"
-              : status === "in-progress"
+              : status === "in_progress"
                 ? "bg-warning"
                 : "bg-success",
           )}
@@ -224,7 +233,6 @@ function Page() {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-
     if (over && active.id !== over.id) {
       const requestId = active.id as string;
       const newStatus = over.id as Request["status"];
@@ -245,14 +253,14 @@ function Page() {
     (request) =>
       request.guest_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.room.room_number.includes(searchQuery) ||
-      request.category.toLowerCase().includes(searchQuery.toLowerCase()),
+      request.category?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const getStatusColor = (status: Request["status"]) => {
     switch (status) {
       case "completed":
         return "bg-accent/10 text-accent hover:bg-accent/20";
-      case "in-progress":
+      case "in_progress":
         return "bg-secondary/10 text-secondary hover:bg-secondary/20";
       case "pending":
         return "bg-muted text-muted-foreground hover:bg-muted/80";
@@ -296,7 +304,9 @@ function Page() {
   return (
     <>
       {requestsLoading ? (
-        <div>Loading...</div>
+        <div className="w-full flex justify-between items-center h-full">
+          Loading...
+        </div>
       ) : (
         <DndContext
           collisionDetection={closestCenter}
