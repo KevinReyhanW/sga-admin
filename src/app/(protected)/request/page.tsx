@@ -20,8 +20,8 @@ interface Request {
   order_id: string;
   room: any;
   order_items: any;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
   assignedTo?: string;
   order_number: string;
 }
@@ -225,10 +225,28 @@ function Page() {
   });
 
   useEffect(() => {
-    const requests = requestsShape.filter((item) => {
-      return item.category !== "room_service";
-    });
-    setRequests(requests);
+    if (!requestsShape || !Array.isArray(requestsShape)) {
+      setRequests([]);
+      return;
+    }
+
+    const filtered = (requestsShape as any[])
+      .filter((item) => item?.category !== "room_service")
+      .map((item) => ({
+        // normalize/convert fields to match Request interface
+        category: item.category,
+        guest_name: item.guest_name,
+        status: item.status,
+        order_id: item.order_id,
+        room: item.room,
+        order_items: item.order_items,
+        created_at: item.created_at ? new Date(item.created_at) : new Date(),
+        updated_at: item.updated_at ? new Date(item.updated_at) : new Date(),
+        assignedTo: item.assignedTo,
+        order_number: item.order_number,
+      })) as Request[];
+
+    setRequests(filtered);
   }, [requestsShape]);
 
   const handleDragEnd = async (event: DragEndEvent) => {

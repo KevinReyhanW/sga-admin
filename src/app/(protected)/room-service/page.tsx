@@ -20,10 +20,10 @@ interface Request {
     | "cancelled";
   items: string[];
   order_id: string;
-  room: any;
-  order_items: any;
-  created_at: string;
-  updated_at: string;
+  room?: { room_number?: string | number } | null;
+  order_items?: { title?: string; description?: string }[] | null;
+  created_at: string | Date;
+  updated_at: string | Date;
   assignedTo?: string;
 }
 
@@ -31,7 +31,7 @@ function Page() {
   const [searchTerm, setSearchTerm] = useState("");
   const [requests, setRequests] = useState<Request[]>([]);
 
-  const { data: requestsShape, isLoading: requestsLoading } = useShape({
+  const { data: requestsShape = [] } = useShape({
     url: `${process.env.NEXT_PUBLIC_ELECTRIC}/v1/shape`,
     params: {
       table: process.env.NEXT_PUBLIC_ELECTRIC_TABLE,
@@ -39,10 +39,10 @@ function Page() {
   });
 
   useEffect(() => {
-    const requests = requestsShape.filter((item) => {
-      return item.category === "room_service";
+    const nextRequests = (requestsShape as any[]).filter((item) => {
+      return item?.category === "room_service";
     });
-    setRequests(requests);
+    setRequests(nextRequests as Request[]);
   }, [requestsShape]);
 
   const getStatusConfig = (status: string) => {
@@ -72,12 +72,13 @@ function Page() {
     }
   };
 
-  const filteredOrders = requests.filter(
-    (order) =>
-      order.guest_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.room.room_number.includes(searchTerm) ||
-      order.order_id.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredOrders = requests.filter((order) => {
+    const term = (searchTerm || "").toLowerCase();
+    const guest = (order.guest_name || "").toLowerCase();
+    const room = String(order.room?.room_number ?? "").toLowerCase();
+    const id = (order.order_id || "").toLowerCase();
+    return guest.includes(term) || room.includes(term) || id.includes(term);
+  });
 
   const stats = {
     total: requests.length,
@@ -156,7 +157,7 @@ function Page() {
                       {order.guest_name}
                     </h3>
                     <Badge variant="outline">
-                      Room {order.room.room_number}
+                      Room {String(order.room?.room_number ?? "-")}
                     </Badge>
                     <Badge
                       className={cn(
@@ -176,11 +177,11 @@ function Page() {
                     <p className="font-medium">
                       Order #{order.order_id.slice(0, 4)}
                     </p>
-                    {order.order_items.map((item: any, index: number) => {
+                    {(order.order_items ?? []).map((item, index: number) => {
                       return (
                         <div key={index} className="py-3">
-                          <h3 className="font-semibold">{item.title}</h3>
-                          <p className="mt-1">{item.description}</p>
+                          <h3 className="font-semibold">{item?.title}</h3>
+                          <p className="mt-1">{item?.description}</p>
                         </div>
                       );
                     })}
@@ -188,7 +189,7 @@ function Page() {
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {format(order.created_at, "dd/MM/yyyy hh:mm aaa")}
+                      {format(new Date(order.created_at), "dd/MM/yyyy hh:mm aaa")}
                     </span>
                     <span className="font-semibold text-foreground">
                       {/*{order.totalAmount}*/}

@@ -1,9 +1,9 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { getSession, signOut } from "next-auth/react";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(...inputs));
 }
 
 export async function getAccessToken() {
@@ -34,10 +34,10 @@ export async function federatedLogout() {
 }
 
 export function timeAgo(dateString: string) {
-  const now = new Date();
-  const date = new Date(dateString);
+  const now: any = new Date();
+  const date: any = new Date(dateString);
 
-  const diffInSeconds = Math.floor((now - date) / 1000); // Difference in seconds
+  const diffInSeconds = Math.floor((now - date) / 1000);
 
   if (diffInSeconds < 60) {
     return `${diffInSeconds} sec ago`; // Less than 1 minute
@@ -68,22 +68,32 @@ export function timeAgo(dateString: string) {
 }
 
 export function convertJsonData(data: any) {
-  const categoryCount = {
+  const categoryCount: Record<
+    "maintenance" | "housekeeping" | "room_service" | "other",
+    number
+  > = {
     maintenance: 0,
     housekeeping: 0,
     room_service: 0,
     other: 0,
   };
 
-  data.forEach((item) => {
-    if (categoryCount.hasOwnProperty(item.category)) {
-      categoryCount[item.category] += 1;
+  data.forEach((item: any) => {
+    // Narrow/cast item.category to the allowed keys so TypeScript can index categoryCount
+    const category = item.category as
+      | "maintenance"
+      | "housekeeping"
+      | "room_service"
+      | "other";
+
+    if (category in categoryCount) {
+      categoryCount[category] += 1;
     } else {
       categoryCount["other"] += 1;
     }
   });
 
-  const result = [
+  return [
     {
       category: "maintenance",
       messages: categoryCount["maintenance"],
@@ -105,6 +115,4 @@ export function convertJsonData(data: any) {
       fill: "var(--color-other)",
     },
   ];
-
-  return result;
 }
