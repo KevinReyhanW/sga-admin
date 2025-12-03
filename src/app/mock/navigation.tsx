@@ -2,8 +2,8 @@ import { ClipboardList, Gauge, Users, UtensilsCrossed } from "lucide-react";
 
 export const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
+    name: "admin",
+    email: "admin@dev-hotels123.com",
     avatar: "/avatars/shadcn.jpg",
   },
   main: [
