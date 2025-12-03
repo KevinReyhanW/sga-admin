@@ -3,21 +3,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ChefHat, Clock, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useShape } from "@electric-sql/react";
 import { format } from "date-fns";
+import requestService from "@/app/services/request";
 
 interface Request {
   category: string;
   guest_name: string;
   status:
     | "pending"
-    | "in-progress"
+    | "in_progress"
     | "completed"
     | "preparing"
     | "delivered"
-    | "cancelled";
+    | "rejected";
   items: string[];
   order_id: string;
   room?: { room_number?: string | number } | null;
@@ -28,7 +29,7 @@ interface Request {
 }
 
 function Page() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm] = useState("");
   const [requests, setRequests] = useState<Request[]>([]);
 
   const { data: requestsShape = [] } = useShape({
@@ -49,19 +50,19 @@ function Page() {
     switch (status) {
       case "pending":
         return { variant: "default" as const, icon: Clock, label: "Pending" };
-      case "preparing":
+      case "in_progress":
         return {
           variant: "secondary" as const,
           icon: ChefHat,
           label: "Preparing",
         };
-      case "delivered":
+      case "completed":
         return {
           variant: "outline" as const,
           icon: CheckCircle,
           label: "Delivered",
         };
-      case "cancelled":
+      case "rejected":
         return {
           variant: "destructive" as const,
           icon: XCircle,
@@ -83,8 +84,12 @@ function Page() {
   const stats = {
     total: requests.length,
     pending: requests.filter((o) => o.status === "pending").length,
-    preparing: requests.filter((o) => o.status === "preparing").length,
-    delivered: requests.filter((o) => o.status === "delivered").length,
+    preparing: requests.filter((o) => o.status === "in_progress").length,
+    delivered: requests.filter((o) => o.status === "completed").length,
+  };
+
+  const onHandleUpdateStatus = async (id: string, status: string) => {
+    await requestService.updateStatus(id, status);
   };
 
   return (
@@ -152,19 +157,23 @@ function Page() {
             >
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex-1 space-y-2">
+                  <Badge
+                    variant="outline"
+                    className="text-xs bg-slate-100 border-gray-400 border font-semibold mb-2"
+                  >
+                    Room {String(order.room?.room_number ?? "-")}
+                  </Badge>
                   <div className="flex items-center gap-3">
                     <h3 className="font-semibold text-foreground">
                       {order.guest_name}
                     </h3>
-                    <Badge variant="outline">
-                      Room {String(order.room?.room_number ?? "-")}
-                    </Badge>
+
                     <Badge
                       className={cn(
                         "gap-1 text-white",
                         order.status === "pending"
                           ? "bg-info"
-                          : order.status === "delivered"
+                          : order.status === "completed"
                             ? "bg-success"
                             : "bg-warning",
                       )}
@@ -179,9 +188,13 @@ function Page() {
                     </p>
                     {(order.order_items ?? []).map((item, index: number) => {
                       return (
-                        <div key={index} className="py-3">
-                          <h3 className="font-semibold">{item?.title}</h3>
-                          <p className="mt-1">{item?.description}</p>
+                        <div className="text-xs text-muted-foreground border-l-2 border-l-primary pl-2 my-2">
+                          <h3 className="text-sm text-muted-foreground font-semibold">
+                            {item?.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {item?.description}
+                          </p>
                         </div>
                       );
                     })}
@@ -189,7 +202,10 @@ function Page() {
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {format(new Date(order.created_at), "dd/MM/yyyy hh:mm aaa")}
+                      {format(
+                        new Date(order.created_at),
+                        "dd/MM/yyyy hh:mm aaa",
+                      )}
                     </span>
                     <span className="font-semibold text-foreground">
                       {/*{order.totalAmount}*/}
@@ -198,18 +214,39 @@ function Page() {
                 </div>
                 <div className="flex gap-2">
                   {order.status === "pending" && (
-                    <Button size="sm" variant="default">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() =>
+                        onHandleUpdateStatus(order.order_id, "in_progress")
+                      }
+                      className="text-xs"
+                    >
                       Start Preparing
                     </Button>
                   )}
-                  {order.status === "preparing" && (
-                    <Button size="sm" variant="default">
+                  {order.status === "in_progress" && (
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() =>
+                        onHandleUpdateStatus(order.order_id, "completed")
+                      }
+                      className="text-xs"
+                    >
                       Mark Delivered
                     </Button>
                   )}
-                  {order.status !== "delivered" &&
-                    order.status !== "cancelled" && (
-                      <Button size="sm" variant="outline">
+                  {order.status !== "completed" &&
+                    order.status !== "rejected" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          onHandleUpdateStatus(order.order_id, "rejected")
+                        }
+                        className="text-xs"
+                      >
                         Cancel
                       </Button>
                     )}
