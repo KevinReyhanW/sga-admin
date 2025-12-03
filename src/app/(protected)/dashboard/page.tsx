@@ -45,6 +45,19 @@ function Page() {
     }
   };
 
+  const getTrendValue = (type: string) => {
+    switch (type) {
+      case "Total Registered Guests":
+        return "+12 this week";
+      case "Active Requests":
+        return `${requests.filter((r) => r.category !== "room_service" && r.status === "pending").length} pending pickup`;
+      case "Room Service Orders":
+        return `${requests.filter((r) => r.category === "room_service" && r.status === "pending").length} pending, ${requests.filter((r) => r.category === "room_service" && r.status === "in_progress").length} preparing`;
+      case "Avg Response Time":
+        return "-3min from last week";
+    }
+  };
+
   return (
     <>
       <ShortcutMenu
@@ -86,7 +99,9 @@ function Page() {
               <div className="text-3xl font-bold text-foreground">
                 {requestsLoading ? "-" : getInsightValue(stat.title)}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">{stat.trend}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {getTrendValue(stat.title)}
+              </p>
             </CardContent>
           </Card>
         ))}
