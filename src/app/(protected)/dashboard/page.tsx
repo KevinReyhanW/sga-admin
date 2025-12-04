@@ -15,6 +15,7 @@ import { useShape } from "@electric-sql/react";
 import { useStore } from "zustand/react";
 import useAppStateStore from "@/app/store/app.store";
 import { startOfWeek } from "date-fns";
+import { sort } from "fast-sort";
 
 function Page() {
   const stateStore = useStore(useAppStateStore);
@@ -125,7 +126,7 @@ function Page() {
               Request by Type
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="h-full">
             <DummyChart requests={requests} />
           </CardContent>
         </Card>
@@ -142,7 +143,8 @@ function Page() {
             ) : (
               <>
                 <NewRequest
-                  requests={requests
+                  requests={sort(requests)
+                    .desc((r) => r.created_at)
                     .filter((r) => r.category !== "room_service")
                     .slice(0, 3)}
                 />
@@ -170,7 +172,8 @@ function Page() {
             ) : (
               <>
                 <RecentRoomService
-                  requests={requests
+                  requests={sort(requests)
+                    .desc((r) => r.created_at)
                     .filter((r) => r.category === "room_service")
                     .slice(0, 3)}
                 />

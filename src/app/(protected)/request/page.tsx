@@ -225,10 +225,6 @@ function Page() {
   });
 
   useEffect(() => {
-    console.log("[debug] -> ", requestsShape);
-  }, [requestsShape]);
-
-  useEffect(() => {
     if (!requestsShape || !Array.isArray(requestsShape)) {
       setRequests([]);
       return;
@@ -237,7 +233,6 @@ function Page() {
     const filtered = (requestsShape as any[])
       .filter((item) => item?.category !== "room_service")
       .map((item) => ({
-        // normalize/convert fields to match Request interface
         category: item.category,
         guest_name: item.guest_name,
         status: item.status,
