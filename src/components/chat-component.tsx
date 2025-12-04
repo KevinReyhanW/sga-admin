@@ -6,7 +6,7 @@ interface Props {
 
 function ChatComponent({ messages }: Props) {
   return (
-    <div className="w-full max-w-lg mx-auto bg-white p-4">
+    <div className="w-full max-w-lg mx-auto bg-white p-5">
       <div className="space-y-4 text-sm">
         {messages.map((message: any) => (
           <div
@@ -14,7 +14,7 @@ function ChatComponent({ messages }: Props) {
             className={`flex ${message.role === "System" ? "justify-start" : "justify-end"}`}
           >
             <div
-              className={`py-1 px-2 rounded-lg max-w-xs break-words ${
+              className={`py-2 px-3 rounded-lg max-w-xs break-words ${
                 message.role === "System"
                   ? "bg-gray-200 text-gray-800"
                   : "bg-blue-500 text-white"

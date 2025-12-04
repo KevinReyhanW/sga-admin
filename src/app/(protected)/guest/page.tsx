@@ -1,11 +1,11 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import guestService from "@/app/services/guest";
 import GuestComponent from "@/components/guest-component";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Funnel, Search, UserPlus } from "lucide-react";
+import { CircleUser, Funnel, Search, UserPlus } from "lucide-react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -24,6 +24,7 @@ import {
 import messageService from "@/app/services/messages";
 import ChatComponent from "@/components/chat-component";
 import { cn } from "@/lib/utils";
+import PaginationComponent from "@/components/pagination";
 
 type FilterType = "all" | "checkin" | "checkout";
 
@@ -34,11 +35,15 @@ function Page() {
   const [showHistory, setShowHistory] = useState(false);
   const [selectedGuest, setSelectedGuest] = useState<any>();
   const [messages, setMessages] = useState<any[]>([]);
+  const [total, setTotal] = React.useState(0);
+  const [current, setCurrent] = React.useState(1);
 
   const { data: guests, isLoading: isLoading } = useQuery({
-    queryKey: ["guests"],
+    queryKey: ["guests", current],
     queryFn: async () => {
-      return await guestService.fetchGuestList();
+      const response = await guestService.fetchGuestList(current);
+      setTotal(response.meta.total_pages);
+      return response?.data;
     },
   });
 
@@ -179,10 +184,19 @@ function Page() {
           <Skeleton className="h-[140px] w-full rounded-lg" />
         </div>
       ) : (
-        <GuestComponent
-          guests={filteredGuests}
-          handleOnshowHistory={(guest) => handleShowHistory(guest)}
-        />
+        <>
+          <GuestComponent
+            guests={filteredGuests}
+            handleOnshowHistory={(guest) => handleShowHistory(guest)}
+          />
+          <PaginationComponent
+            total={total}
+            current={current}
+            onPageChange={(value) => {
+              setCurrent(value);
+            }}
+          />
+        </>
       )}
       <Drawer
         open={showHistory}
@@ -194,8 +208,12 @@ function Page() {
             <DrawerTitle>Message History</DrawerTitle>
             <DrawerDescription></DrawerDescription>
           </DrawerHeader>
-          <div className="flex justify-between items-center p-4 border-b border-b-gray-300">
-            <div className="font-semibold text-sm">{selectedGuest?.name}</div>
+          <div className="flex justify-between items-center p-4 border-b border-b-gray-300 bg-gray-100">
+            <div className="flex items-center gap-x-2">
+              <CircleUser size={15} />
+              <div className="font-semibold text-sm">{selectedGuest?.name}</div>
+            </div>
+
             <Badge>#{selectedGuest?.checkin_rooms[0].room.room_number}</Badge>
           </div>
           <div className="h-full">

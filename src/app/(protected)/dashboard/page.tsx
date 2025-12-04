@@ -14,6 +14,7 @@ import LoaderComponent from "@/components/loader-component";
 import { useShape } from "@electric-sql/react";
 import { useStore } from "zustand/react";
 import useAppStateStore from "@/app/store/app.store";
+import { startOfWeek } from "date-fns";
 
 function Page() {
   const stateStore = useStore(useAppStateStore);
@@ -35,7 +36,7 @@ function Page() {
   const getInsightValue = (type: string) => {
     switch (type) {
       case "Total Registered Guests":
-        return guests?.length;
+        return guests?.data.length;
       case "Active Requests":
         return requests.filter((r) => r.category !== "room_service").length;
       case "Room Service Orders":
@@ -48,7 +49,16 @@ function Page() {
   const getTrendValue = (type: string) => {
     switch (type) {
       case "Total Registered Guests":
-        return "+12 this week";
+        try {
+          const start = startOfWeek(new Date(), { weekStartsOn: 1 });
+          const count = guests?.data.filter((g: any) => {
+            const created = g?.created_at ? new Date(g.created_at) : null;
+            return created && created >= start;
+          }).length;
+          return `+${count ?? 0} this week`;
+        } catch (e) {
+          return `+0 this week`;
+        }
       case "Active Requests":
         return `${requests.filter((r) => r.category !== "room_service" && r.status === "pending").length} pending pickup`;
       case "Room Service Orders":

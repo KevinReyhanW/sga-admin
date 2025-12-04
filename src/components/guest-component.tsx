@@ -75,7 +75,7 @@ function GuestComponent({ guests = [], handleOnshowHistory }: Props) {
                   Check In
                 </h3>
                 <p className="text-xs">
-                  {format(guest.checkin_rooms[0].checkin_date, "dd MMMM, yyyy")}
+                  {format(guest.checkin_rooms[0].checkin_date, "dd MMM, yyyy")}
                 </p>
               </div>
               <div className="col-span-2">
@@ -87,7 +87,7 @@ function GuestComponent({ guests = [], handleOnshowHistory }: Props) {
                   {guest.checkin_rooms[0].checkout_date
                     ? format(
                         guest.checkin_rooms[0].checkout_date,
-                        "dd MMMM, yyyy",
+                        "dd MMM, yyyy",
                       )
                     : "-"}
                 </p>

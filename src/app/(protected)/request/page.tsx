@@ -225,6 +225,10 @@ function Page() {
   });
 
   useEffect(() => {
+    console.log("[debug] -> ", requestsShape);
+  }, [requestsShape]);
+
+  useEffect(() => {
     if (!requestsShape || !Array.isArray(requestsShape)) {
       setRequests([]);
       return;

@@ -2,10 +2,12 @@ import apiClient from "@/app/services/apiClient";
 import { format } from "date-fns";
 
 class guestService {
-  static async fetchGuestList() {
+  static async fetchGuestList(currentPage: number = 1) {
     try {
-      const response = await apiClient.get(`/api/v1/guests`);
-      return response.data.data;
+      const response = await apiClient.get(
+        `/api/v1/guests?page=${currentPage}`,
+      );
+      return response.data;
     } catch (error) {
       console.log(error);
     }
