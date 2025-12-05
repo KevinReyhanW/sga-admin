@@ -24,22 +24,22 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  // (error) => {
-  //     if (error.status === 401) {
-  //         return signOut({ redirectTo: "/login" });
-  //     }
-  //     return Promise.reject(error);
-  // },
+  (error) => {
+    if (error.status === 401) {
+      return signOut({ redirectTo: "/login" });
+    }
+    return Promise.reject(error);
+  },
 );
 
 apiClient.interceptors.response.use(
   (resolve) => resolve,
-  // (reject) => {
-  //     if (reject.status === 401) {
-  //         return signOut({ redirectTo: "/login" });
-  //     }
-  //     return Promise.reject(reject);
-  // },
+  (reject) => {
+    if (reject.status === 401) {
+      return signOut({ redirectTo: "/login" });
+    }
+    return Promise.reject(reject);
+  },
 );
 
 export default apiClient;
