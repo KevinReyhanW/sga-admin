@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { format, startOfToday } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { z } from "zod";
@@ -40,7 +40,9 @@ const guestSchema = z.object({
   room_number: z.string().min(3, "Room number must be at least 3 characters"),
   email: z.email("Please enter a valid email address"),
   phone_number: z.string().min(8, "Phone number must be at least 8 characters"),
-  checkin_date: z.date().min(8, "Check-in date must be filled"),
+  checkin_date: z
+    .date()
+    .min(startOfToday(), "Check-in date cannot be in the past"),
 });
 
 interface Props {
@@ -50,6 +52,7 @@ interface Props {
 
 function RegisterDialog({ open, handleClose }: Props) {
   const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = React.useState(false);
   const form = useForm<z.infer<typeof guestSchema>>({
     resolver: zodResolver(guestSchema),
     defaultValues: {
@@ -76,11 +79,14 @@ function RegisterDialog({ open, handleClose }: Props) {
 
   const onSubmit = async (data: any) => {
     try {
+      setIsLoading(true);
       await guestService.registerGuest(data);
       await queryClient.invalidateQueries({ queryKey: ["guests"] });
       handleCloseDialog();
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -198,7 +204,16 @@ function RegisterDialog({ open, handleClose }: Props) {
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        // Prevent clearing the date when clicking the same selected day
+                        onSelect={(date) => {
+                          if (!date) return; // ignore toggling off
+                          field.onChange(date);
+                        }}
+                        disabled={(date) => {
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          return date < today;
+                        }}
                       />
                     </PopoverContent>
                   </Popover>
@@ -234,6 +249,7 @@ function RegisterDialog({ open, handleClose }: Props) {
           <Button
             type="submit"
             className="w-full bg-primary hover:bg-primary/90"
+            disabled={isLoading}
           >
             Register Guest
           </Button>
