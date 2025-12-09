@@ -17,7 +17,7 @@ function NewRequest({ requests }: Props) {
             variant="outline"
             className="text-xs bg-slate-100 border-gray-400 border font-semibold mb-2"
           >
-            Room {activity.room.room_number}
+            Room {activity?.room !== null ? activity.room.room_number : "N/A"}
           </Badge>
           <div className="w-full mb-2">
             <div className="font-semibold text-sm">{activity.guest_name}</div>

@@ -268,8 +268,8 @@ function Page() {
 
   const filteredRequests = requests.filter(
     (request) =>
-      request.guest_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.room.room_number.includes(searchQuery) ||
+      request.guest_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      request.room?.room_number?.includes(searchQuery) ||
       request.category?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
