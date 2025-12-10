@@ -1,4 +1,6 @@
 import React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface Props {
   messages: any;
@@ -20,9 +22,41 @@ function ChatComponent({ messages }: Props) {
                   : "bg-blue-500 text-white"
               }`}
             >
-              {message.message.split("\n").map((line: any, index: number) => (
-                <p key={index}>{line}</p>
-              ))}
+              {message.role === "System" ? (
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    // Ensure bullet/number list markers and indentation show up nicely in the chat bubble
+                    ul: ({ node, ...props }) => (
+                      <ul className="list-disc list-inside space-y-1 pl-1" {...props} />
+                    ),
+                    ol: ({ node, ...props }) => (
+                      <ol className="list-decimal list-inside space-y-1 pl-1" {...props} />
+                    ),
+                    li: ({ node, ...props }) => (
+                      <li className="ml-1" {...props} />
+                    ),
+                    p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                    code: ({ inline, className, children, ...props }) => (
+                      <code
+                        className={
+                          "rounded bg-black/10 px-1 py-0.5 font-mono text-[0.85em] " +
+                          (className || "")
+                        }
+                        {...props}
+                      >
+                        {children}
+                      </code>
+                    ),
+                  }}
+                >
+                  {message.message || ""}
+                </ReactMarkdown>
+              ) : (
+                message.message.split("\n").map((line: any, index: number) => (
+                  <p key={index}>{line}</p>
+                ))
+              )}
             </div>
           </div>
         ))}
