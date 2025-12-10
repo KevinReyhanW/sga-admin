@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { CheckCircle, Clock, Search, User } from "lucide-react";
+import { ArrowLeftRight, CheckCircle, Clock, Search, User } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import {
   closestCenter,
@@ -22,7 +22,7 @@ interface Request {
   order_items: any;
   created_at: Date;
   updated_at: Date;
-  assignedTo?: string;
+  assigned_to?: string;
   order_number: string;
 }
 import { useQuery } from "@tanstack/react-query";
@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select";
 import requestService from "@/app/services/request";
 import { title } from "radash";
+import LoaderComponent from "@/components/loader-component";
 
 interface DraggableCardProps {
   request: Request;
@@ -62,7 +63,10 @@ function DraggableCard({
 
   const handleAssignStaff = (staffName: string) => {
     onAssignStaff(request.order_number, staffName);
+    setReassignStaff(false);
   };
+
+  const [reassignStaff, setReassignStaff] = useState(false);
 
   return (
     <Card
@@ -102,13 +106,22 @@ function DraggableCard({
         </div>
 
         <div className="space-y-2 text-xs text-muted-foreground mb-4 mt-1">
-          {request.assignedTo && (
+          {request.assigned_to !== null && !reassignStaff && (
             <div className="flex items-center gap-1">
               <User className="w-3 h-3" />
-              {request.assignedTo}
+              {request.assigned_to}
+              <ArrowLeftRight
+                size={15}
+                className="ml-2 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setReassignStaff(!reassignStaff);
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+              />
             </div>
           )}
-          {!request.assignedTo && (
+          {(request.assigned_to === null || reassignStaff) && (
             <Select onValueChange={handleAssignStaff}>
               <SelectTrigger
                 className="w-full mt-2 cursor-pointer"
@@ -225,6 +238,10 @@ function Page() {
   });
 
   useEffect(() => {
+    console.log("[debug] -> ", requestsShape);
+  }, [requestsShape]);
+
+  useEffect(() => {
     if (!requestsShape || !Array.isArray(requestsShape)) {
       setRequests([]);
       return;
@@ -241,7 +258,7 @@ function Page() {
         order_items: item.order_items,
         created_at: item.created_at ? new Date(item.created_at) : new Date(),
         updated_at: item.updated_at ? new Date(item.updated_at) : new Date(),
-        assignedTo: item.assignedTo,
+        assigned_to: item.assigned_to,
         order_number: item.order_number,
       })) as Request[];
 
@@ -312,7 +329,7 @@ function Page() {
     );
     tempRequests[assignedIndex] = {
       ...tempRequests[assignedIndex],
-      assignedTo: staffName,
+      assigned_to: staffName,
     };
     setRequests(tempRequests);
     await handleAssignWorker(requestId, staffName);
@@ -321,8 +338,8 @@ function Page() {
   return (
     <>
       {requestsLoading ? (
-        <div className="w-full flex justify-between items-center h-full">
-          Loading...
+        <div className="w-full flex justify-between items-center p-20">
+          <LoaderComponent />
         </div>
       ) : (
         <DndContext
