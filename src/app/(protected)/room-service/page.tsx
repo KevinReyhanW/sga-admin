@@ -41,7 +41,9 @@ function Page() {
 
   useEffect(() => {
     const nextRequests = (requestsShape as any[]).filter((item) => {
-      return item?.category === "room_service";
+      return (
+        item?.category === "room_service" || item?.category === "restaurant"
+      );
     });
     setRequests(nextRequests as Request[]);
   }, [requestsShape]);

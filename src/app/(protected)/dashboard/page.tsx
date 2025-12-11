@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import ShortcutMenu from "@/components/shortcut-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { stats } from "@/app/mock/dashboard";
@@ -41,7 +41,9 @@ function Page() {
       case "Active Requests":
         return requests.filter((r) => r.category !== "room_service").length;
       case "Room Service Orders":
-        return requests.filter((r) => r.category === "room_service").length;
+        return requests.filter(
+          (r) => r.category === "room_service" || r.category === "restaurant",
+        ).length;
       case "Avg Response Time":
         return "4.56";
     }
@@ -63,7 +65,7 @@ function Page() {
       case "Active Requests":
         return `${requests.filter((r) => r.category !== "room_service" && r.status === "pending").length} pending pickup`;
       case "Room Service Orders":
-        return `${requests.filter((r) => r.category === "room_service" && r.status === "pending").length} pending, ${requests.filter((r) => r.category === "room_service" && r.status === "in_progress").length} preparing`;
+        return `${requests.filter((r) => (r.category === "room_service" || r.category === "restaurant") && r.status === "pending").length} pending, ${requests.filter((r) => r.category === "room_service" && r.status === "in_progress").length} preparing`;
       case "Avg Response Time":
         return "-3min from last week";
     }
@@ -174,7 +176,11 @@ function Page() {
                 <RecentRoomService
                   requests={sort(requests)
                     .desc((r) => r.created_at)
-                    .filter((r) => r.category === "room_service")
+                    .filter(
+                      (r) =>
+                        r.category === "room_service" ||
+                        r.category === "restaurant",
+                    )
                     .slice(0, 3)}
                 />
                 <a
