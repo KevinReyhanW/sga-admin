@@ -190,7 +190,10 @@ function Page() {
                     </p>
                     {(order.order_items ?? []).map((item, index: number) => {
                       return (
-                        <div className="text-xs text-muted-foreground border-l-2 border-l-primary pl-2 my-2">
+                        <div
+                          key={index}
+                          className="text-xs text-muted-foreground border-l-2 border-l-primary pl-2 my-2"
+                        >
                           <h3 className="text-sm text-muted-foreground font-semibold">
                             {item?.title}
                           </h3>
