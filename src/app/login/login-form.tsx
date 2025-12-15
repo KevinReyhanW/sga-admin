@@ -23,6 +23,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import LoaderComponent from "@/components/loader-component";
+import { LoaderCircle } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.email("Silakan masukkan alamat email yang valid"),
@@ -126,7 +128,16 @@ function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
               />
 
               <Field>
-                <Button type="submit">Login</Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? (
+                    <LoaderCircle
+                      size={24}
+                      className="text-white animate-spin"
+                    />
+                  ) : (
+                    "Login"
+                  )}
+                </Button>
                 {/*<FieldDescription className="text-center">*/}
                 {/*  Don&apos;t have an account? <a href="#">Sign up</a>*/}
                 {/*</FieldDescription>*/}
