@@ -104,12 +104,12 @@ function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
                   <Field>
                     <div className="flex items-center">
                       <FieldLabel htmlFor="password-form">Password</FieldLabel>
-                      <a
-                        href="#"
-                        className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                      >
-                        Forgot your password?
-                      </a>
+                      {/*<a*/}
+                      {/*  href="#"*/}
+                      {/*  className="ml-auto inline-block text-sm underline-offset-4 hover:underline"*/}
+                      {/*>*/}
+                      {/*  Forgot your password?*/}
+                      {/*</a>*/}
                     </div>
                     <Input
                       {...field}
@@ -127,9 +127,9 @@ function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
 
               <Field>
                 <Button type="submit">Login</Button>
-                <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
-                </FieldDescription>
+                {/*<FieldDescription className="text-center">*/}
+                {/*  Don&apos;t have an account? <a href="#">Sign up</a>*/}
+                {/*</FieldDescription>*/}
               </Field>
             </FieldGroup>
           </form>
