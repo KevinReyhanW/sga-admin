@@ -61,7 +61,6 @@ function Page() {
     return { checkin, checkout };
   }, [guests]);
 
-  // Filter guests based on search query and active filter
   const filteredGuests = useMemo(() => {
     if (!guests) return guests;
 
@@ -78,7 +77,6 @@ function Page() {
       );
     }
 
-    // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter((guest: any) => {

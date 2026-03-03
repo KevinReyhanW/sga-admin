@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Service Group Assignment",
+  title: "Service Group Assistant",
   description: "",
 };
 

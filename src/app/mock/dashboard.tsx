@@ -9,14 +9,14 @@ export const stats = [
     color: "success",
   },
   {
-    title: "Active Requests",
+    title: "Submitted Requests",
     value: "18",
     icon: ClipboardList,
     trend: "6 pending pickup",
     color: "warning",
   },
   {
-    title: "Room Service Orders",
+    title: "Room Service",
     value: "5",
     icon: UtensilsCrossed,
     trend: "2 pending, 2 preparing",

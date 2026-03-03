@@ -5,7 +5,7 @@ class guestService {
   static async fetchGuestList(currentPage: number = 1) {
     try {
       const response = await apiClient.get(
-        `/api/v1/guests?page=${currentPage}`,
+        `/api/v1/guests?page=${currentPage}&per_page=10`,
       );
       return response.data;
     } catch (error) {

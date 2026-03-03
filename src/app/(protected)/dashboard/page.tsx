@@ -27,6 +27,10 @@ function Page() {
     },
   });
 
+  useEffect(() => {
+    console.log("[debug] -> ", requests);
+  }, [requests]);
+
   const { data: guests, isLoading: guestLoading } = useQuery({
     queryKey: ["guests"],
     queryFn: async () => {
@@ -136,7 +140,7 @@ function Page() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <HandPlatter className="w-5 h-5 text-primary" />
-              New Requests
+              Requests
             </CardTitle>
           </CardHeader>
           <CardContent className="h-full">
@@ -165,7 +169,7 @@ function Page() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <UtensilsCrossed className="w-5 h-5 text-primary" />
-              Recent Room Service
+              Room Service
             </CardTitle>
           </CardHeader>
           <CardContent className="h-full">

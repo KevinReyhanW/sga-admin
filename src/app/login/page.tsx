@@ -11,7 +11,7 @@ function Page() {
         alt="logo"
         className="w-24 mb-5"
       />
-      <h3 className="text-2xl font-semibold mb-5">Smart Guest Assignment</h3>
+      <h3 className="text-2xl font-semibold mb-5">Smart Guest Assistant</h3>
       <div className="w-full max-w-sm">
         <LoginForm />
       </div>

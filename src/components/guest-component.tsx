@@ -6,6 +6,11 @@ import guestService from "@/app/services/guest";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Props {
   guests: any;
@@ -58,7 +63,7 @@ function GuestComponent({ guests = [], handleOnshowHistory }: Props) {
                   <Mail className="text-primary" size={12} />
                   Email
                 </h3>
-                <p className="text-xs">{guest.email}</p>
+                <p className="text-xs truncate">{guest.email}</p>
               </div>
               <div className="col-span-2">
                 <h3 className="font-semibold text-sm flex items-center gap-x-1">
