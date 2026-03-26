@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { adminStats, recentEscalations, departmentStatusCounts, departmentSummary, chatPulseData } from "@/app/mock/admin";
+import { adminStats, recentEscalations, departmentStatusCounts, chatPulseData } from "@/app/mock/admin";
 import { 
   AlertTriangle, 
   CheckCircle2, 
@@ -75,32 +75,18 @@ export default function AdminDashboardPage() {
         ))}
       </div>
 
-      {/* Department Summary - SARA Style */}
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
-        {departmentSummary.map((dept) => {
-          const pending = departmentStatusCounts.find(d => d.name === dept.name);
-          return (
-            <Card key={dept.name} className="shadow-soft hover:shadow-medium transition-all group border-none bg-muted/20">
-              <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                <div className="text-2xl font-semibold mb-0.5">{dept.total.toLocaleString()}</div>
-                <div className="text-[10px] uppercase font-medium text-muted-foreground tracking-wider">
-                  {dept.name}
-                </div>
-                <div className={cn(
-                  "text-[10px] font-semibold mt-1",
-                  dept.closedRate >= 95 ? "text-green-600" : dept.closedRate >= 80 ? "text-amber-600" : "text-red-600"
-                )}>
-                  {dept.closedRate}% Closed
-                </div>
-                {pending && pending.count > 0 && (
-                  <div className="text-[10px] text-amber-600 font-medium mt-0.5">
-                    {pending.count} pending
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
+      {/* Department Pending Status - Operational View */}
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
+        {departmentStatusCounts.map((dept) => (
+          <Card key={dept.name} className="shadow-soft hover:shadow-medium transition-all group border-none bg-muted/20">
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+              <div className="text-2xl font-semibold mb-1">{dept.count}</div>
+              <div className="text-[10px] uppercase font-medium text-muted-foreground tracking-wider">
+                Pending {dept.name}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <div className="grid gap-6 md:grid-cols-12">
