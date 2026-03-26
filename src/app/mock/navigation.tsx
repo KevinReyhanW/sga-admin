@@ -1,4 +1,13 @@
-import { ClipboardList, Gauge, Users, UtensilsCrossed } from "lucide-react";
+import { 
+  ClipboardList, 
+  Gauge, 
+  Users, 
+  UtensilsCrossed, 
+  Shield,
+  BarChart,
+  MessageSquareText,
+  Activity
+} from "lucide-react";
 
 export const data = {
   user: {
@@ -28,4 +37,21 @@ export const data = {
       icon: UtensilsCrossed,
     },
   ],
+  admin: [
+    {
+      title: "SGA Control Center",
+      url: "/admin/dashboard",
+      icon: Shield,
+    },
+    {
+      title: "Product Analysis",
+      url: "/admin/reports",
+      icon: BarChart,
+    },
+    {
+      title: "Messaging Engine",
+      url: "/admin/messaging",
+      icon: MessageSquareText,
+    },
+  ]
 };

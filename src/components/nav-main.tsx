@@ -8,13 +8,14 @@ import {
 } from "@/components/ui/sidebar";
 
 interface Props {
+  label?: string;
   items: any[];
 }
 
-function NavMain({ items }: Props) {
+function NavMain({ label = "Platform", items }: Props) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>{label}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>

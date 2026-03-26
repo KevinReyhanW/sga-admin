@@ -39,7 +39,8 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.main} />
+        <NavMain label="Platform" items={data.main} />
+        <NavMain label="System Admin" items={data.admin} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
