@@ -39,6 +39,17 @@ class guestService {
       console.log(error);
     }
   }
+
+  static async fetchGuestOrders(guestId: string) {
+    try {
+      const response = await apiClient.get(
+        `/api/v1/guests/${guestId}/orders`,
+      );
+      return response.data;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 export default guestService;

@@ -9,14 +9,14 @@ export const stats = [
     color: "success",
   },
   {
-    title: "Submitted Requests",
+    title: "Active Requests",
     value: "18",
     icon: ClipboardList,
     trend: "6 pending pickup",
     color: "warning",
   },
   {
-    title: "Room Service",
+    title: "Room Service Orders",
     value: "5",
     icon: UtensilsCrossed,
     trend: "2 pending, 2 preparing",
@@ -26,7 +26,7 @@ export const stats = [
     title: "Avg Response Time",
     value: "12min",
     icon: Clock,
-    trend: "-3min from last week",
+    trend: "-3min from yesterday",
     color: "success",
   },
 ];

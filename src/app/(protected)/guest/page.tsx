@@ -5,7 +5,7 @@ import guestService from "@/app/services/guest";
 import GuestComponent from "@/components/guest-component";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CircleUser, Funnel, Search, UserPlus } from "lucide-react";
+import { CircleUser, Clock, Funnel, Search, ShoppingBag, UserPlus } from "lucide-react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -25,6 +25,8 @@ import messageService from "@/app/services/messages";
 import ChatComponent from "@/components/chat-component";
 import { cn } from "@/lib/utils";
 import PaginationComponent from "@/components/pagination";
+import { format } from "date-fns";
+import { title } from "radash";
 
 type FilterType = "all" | "checkin" | "checkout";
 
@@ -37,6 +39,10 @@ function Page() {
   const [messages, setMessages] = useState<any[]>([]);
   const [total, setTotal] = React.useState(0);
   const [current, setCurrent] = React.useState(1);
+  const [showOrderHistory, setShowOrderHistory] = useState(false);
+  const [orderHistoryGuest, setOrderHistoryGuest] = useState<any>(null);
+  const [orderHistoryData, setOrderHistoryData] = useState<any[]>([]);
+  const [orderHistoryLoading, setOrderHistoryLoading] = useState(false);
 
   const { data: guests, isLoading: isLoading } = useQuery({
     queryKey: ["guests", current],
@@ -114,6 +120,26 @@ function Page() {
     setShowHistory(true);
   };
 
+  const handleShowOrderHistory = async (guest: any) => {
+    setOrderHistoryGuest(guest);
+    setShowOrderHistory(true);
+    setOrderHistoryLoading(true);
+    try {
+      const response = await guestService.fetchGuestOrders(guest.id);
+      setOrderHistoryData(response?.data ?? []);
+    } catch (e) {
+      setOrderHistoryData([]);
+    } finally {
+      setOrderHistoryLoading(false);
+    }
+  };
+
+  const handleCloseOrderHistory = () => {
+    setShowOrderHistory(false);
+    setOrderHistoryGuest(null);
+    setOrderHistoryData([]);
+  };
+
   return (
     <div>
       <div>
@@ -186,6 +212,7 @@ function Page() {
           <GuestComponent
             guests={filteredGuests}
             handleOnshowHistory={(guest) => handleShowHistory(guest)}
+            handleOnShowOrderHistory={(guest) => handleShowOrderHistory(guest)}
           />
           <PaginationComponent
             total={total}
@@ -226,6 +253,93 @@ function Page() {
               </div>
             ) : (
               <ChatComponent messages={messages} />
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Order History Drawer */}
+      <Drawer
+        open={showOrderHistory}
+        onOpenChange={handleCloseOrderHistory}
+        direction="right"
+      >
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Order History</DrawerTitle>
+            <DrawerDescription></DrawerDescription>
+          </DrawerHeader>
+          <div className="flex justify-between items-center p-4 border-b border-b-gray-300 bg-gray-100">
+            <div className="flex items-center gap-x-2">
+              <CircleUser size={15} />
+              <div className="font-semibold text-sm">
+                {orderHistoryGuest?.name}
+              </div>
+            </div>
+            <Badge>
+              #{orderHistoryGuest?.checkin_rooms[0]?.room?.room_number}
+            </Badge>
+          </div>
+          <div className="h-full overflow-y-auto">
+            {orderHistoryLoading ? (
+              <div className="flex w-full h-full justify-center items-center p-10">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              </div>
+            ) : orderHistoryData.length === 0 ? (
+              <div className="flex w-full h-full justify-center items-center flex-col space-y-3 p-10">
+                <ShoppingBag className="w-12 h-12 text-muted-foreground" />
+                <p className="text-muted-foreground text-sm">No Order History</p>
+              </div>
+            ) : (
+              <div className="space-y-3 p-4">
+                {orderHistoryData.map((order: any, index: number) => (
+                  <div
+                    key={index}
+                    className="border rounded-lg p-3 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        Order #{order.order_id?.slice(0, 8)}
+                      </span>
+                      <Badge
+                        className={cn(
+                          "text-xs text-white",
+                          order.status === "pending"
+                            ? "bg-info"
+                            : order.status === "completed"
+                              ? "bg-success"
+                              : order.status === "in_progress"
+                                ? "bg-warning"
+                                : "bg-destructive",
+                        )}
+                      >
+                        {title(order.status)}
+                      </Badge>
+                    </div>
+                    <div className="text-sm font-medium">
+                      {title(order.category)}
+                    </div>
+                    {order.order_items?.map((item: any, i: number) => (
+                      <div
+                        key={i}
+                        className="text-xs text-muted-foreground border-l-2 border-l-primary pl-2"
+                      >
+                        <h3 className="font-semibold">{item?.title}</h3>
+                        <p>{item?.description}</p>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="w-3 h-3" />
+                      {order.created_at
+                        ? format(
+                          new Date(order.created_at),
+                          "dd MMM yyyy, hh:mm aaa",
+                        )
+                        : "-"}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </DrawerContent>

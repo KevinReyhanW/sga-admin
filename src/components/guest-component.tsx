@@ -15,8 +15,9 @@ import {
 interface Props {
   guests: any;
   handleOnshowHistory: (guest: any) => void;
+  handleOnShowOrderHistory: (guest: any) => void;
 }
-function GuestComponent({ guests = [], handleOnshowHistory }: Props) {
+function GuestComponent({ guests = [], handleOnshowHistory, handleOnShowOrderHistory }: Props) {
   const queryClient = useQueryClient();
 
   const handleCheckOut = async (id: string) => {
@@ -91,48 +92,41 @@ function GuestComponent({ guests = [], handleOnshowHistory }: Props) {
                 <p className="text-xs">
                   {guest.checkin_rooms[0].checkout_date
                     ? format(
-                        guest.checkin_rooms[0].checkout_date,
-                        "dd MMM, yyyy",
-                      )
+                      guest.checkin_rooms[0].checkout_date,
+                      "dd MMM, yyyy",
+                    )
                     : "-"}
                 </p>
               </div>
             </div>
             <Separator />
-            {guest.checkin_rooms[0].checkout_date === null ? (
-              <div className="grid grid-cols-5 gap-x-2 px-4 py-2 bg-slate-50">
-                <div className="col-span-3">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => handleOnshowHistory(guest)}
-                  >
-                    Message History
-                  </Button>
-                </div>
-                <div className="col-span-2">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => handleCheckOut(guest.id)}
-                  >
-                    Check Out
-                  </Button>
-                </div>
+            <div className="flex flex-col gap-2 px-4 py-2 bg-slate-50">
+              <div className="grid grid-cols-2 gap-x-2">
+                <Button
+                  variant="outline"
+                  className="w-full text-xs"
+                  onClick={() => handleOnshowHistory(guest)}
+                >
+                  Message History
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full text-xs"
+                  onClick={() => handleOnShowOrderHistory(guest)}
+                >
+                  Order History
+                </Button>
               </div>
-            ) : (
-              <div className="grid grid-cols-5 gap-x-2 px-4 py-2 bg-slate-50">
-                <div className="col-span-5">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => handleOnshowHistory(guest)}
-                  >
-                    Message History
-                  </Button>
-                </div>
-              </div>
-            )}
+              {guest.checkin_rooms[0].checkout_date === null && (
+                <Button
+                  variant="outline"
+                  className="w-full text-xs"
+                  onClick={() => handleCheckOut(guest.id)}
+                >
+                  Check Out
+                </Button>
+              )}
+            </div>
           </div>
         );
       })}
